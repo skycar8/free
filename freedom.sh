@@ -14,7 +14,7 @@ function yellow(){
 }
 
 # 安装常用软件包
-sudo apt-get -y update && apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils
+sudo apt-get -y update && sudo apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils
 
 # 读取域名
 green "======================"
@@ -23,6 +23,7 @@ green "======================"
 read domain
 # 校验域名
 
+green "===============获取本机ip地址==============="
 # 获取本机ip地址
 # curl icanhazip.com
 # curl ident.me
@@ -32,6 +33,7 @@ read domain
 # curl myip.dnsomatic.com
 # curl ip.appspot.com
 ipAddr=$(curl ifconfig.me)
+red "ip: $ipAddr"
 
 # 读取Cloudflare Email和Key
 # read CF_Email
@@ -43,7 +45,8 @@ ipAddr=$(curl ifconfig.me)
 
 green "===============安装nginx==============="
 # 安装nginx
-sudo yum install -y nginx
+sudo apt-get install -y nginx || return 100
+blue "nginx安装成功，开始配置nginx"
 mkdir /etc/nginx/ssl
 
 # 删除默认配置
@@ -117,7 +120,7 @@ unzip car.zip
 rm car.zip
 
 # 启动nginx
-sudo systemctl restart nginx
+sudo systemctl restart nginx  || return 101
 sudo systemctl status nginx
 
 # nginx开机启动
@@ -127,10 +130,10 @@ sudo systemctl enable nginx.service
 
 green "===============安装SSL证书==============="
 # 安装acme
-curl https://get.acme.sh | sh
+curl https://get.acme.sh | sh  || return 102
 
 # 申请证书
-~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || return 1
+~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || return 103
 # or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
 
 # 安装证书
@@ -146,10 +149,10 @@ acme.sh  --upgrade  --auto-upgrade
 
 green "===============安装trojan==============="
 # 安装trojan
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)"
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 104
 
 # 生成随机密码
-password=$(cat /dev/urandom | head -1 | md5sum)
+sudo password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
 
 # 生成配置文件
 sudo cat > /usr/local/etc/trojan/config.json <<-EOF
@@ -204,7 +207,7 @@ sudo cat > /usr/local/etc/trojan/config.json <<-EOF
 EOF
 
 # 启动trojan
-sudo systemctl restart trojan
+sudo systemctl restart trojan  || return 105
 sudo systemctl status trojan
 
 # torjan开机启动
