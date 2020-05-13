@@ -1,28 +1,35 @@
 #!/bin/bash
 
 function blue(){
-	echo -e "\033[34m\033[01m $1 \033[0m"
+	echo -e "\e[34m\e[01m $1 \e[0m"
 }
 function green(){
-	echo -e "\033[32m\033[01m $1 \033[0m"
+	echo -e "\e[32m\e[01m $1 \e[0m"
 }
 function red(){
-	echo -e "\033[31m\033[01m $1 \033[0m"
+	echo -e "\e[31m\e[01m $1 \e[0m"
 }
 function yellow(){
-	echo -e "\033[33m\033[01m $1 \033[0m"
+	echo -e "\e[33m\e[01m $1 \e[0m"
+}
+function pink(){
+	echo -e "\e[35m\e[01m $1 \e[0m"
 }
 
 # 安装常用软件包
 sudo apt-get -y update && sudo apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils
 
 # 读取域名
+echo
+echo
 green "======================"
 green " 输入解析到此VPS的域名"
 green "======================"
 read domain
 # 校验域名
 
+echo
+echo
 green "===============获取本机ip地址==============="
 # 获取本机ip地址
 # curl icanhazip.com
@@ -33,7 +40,7 @@ green "===============获取本机ip地址==============="
 # curl myip.dnsomatic.com
 # curl ip.appspot.com
 ipAddr=$(curl ifconfig.me)
-red "ip: $ipAddr"
+pink "ip: $ipAddr"
 
 # 读取Cloudflare Email和Key
 # read CF_Email
@@ -43,11 +50,13 @@ red "ip: $ipAddr"
 
 
 
+echo
+echo
 green "===============安装nginx==============="
 # 安装nginx
-sudo apt-get install -y nginx || return 100
-blue "nginx安装成功，开始配置nginx"
-mkdir /etc/nginx/ssl
+sudo apt-get install -y nginx || exit 100
+yellow "nginx安装成功，开始配置nginx"
+sudo mkdir /etc/nginx/ssl
 
 # 删除默认配置
 sudo rm /etc/nginx/sites-enabled/default
@@ -120,7 +129,7 @@ unzip car.zip
 rm car.zip
 
 # 启动nginx
-sudo systemctl restart nginx  || return 101
+sudo systemctl restart nginx  || exit 101
 sudo systemctl status nginx
 
 # nginx开机启动
@@ -128,12 +137,14 @@ sudo systemctl enable nginx.service
 
 
 
+echo
+echo
 green "===============安装SSL证书==============="
 # 安装acme
-curl https://get.acme.sh | sh  || return 102
+curl https://get.acme.sh | sh  || exit 102
 
 # 申请证书
-~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || return 103
+~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || exit 103
 # or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
 
 # 安装证书
@@ -147,6 +158,8 @@ acme.sh  --upgrade  --auto-upgrade
 
 
 
+echo
+echo
 green "===============安装trojan==============="
 # 安装trojan
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 104
@@ -207,12 +220,15 @@ sudo cat > /usr/local/etc/trojan/config.json <<-EOF
 EOF
 
 # 启动trojan
-sudo systemctl restart trojan  || return 105
+sudo systemctl restart trojan  || exit 105
 sudo systemctl status trojan
 
 # torjan开机启动
 sudo systemctl enable trojan.service
 
+
+echo
+echo
 green "===============安装OK==============="
 green "trojan连接密码：$password"
 
@@ -221,6 +237,8 @@ green "trojan连接密码：$password"
 
 
 
+echo
+echo
 green "===============开启bbr加速==============="
 # 开启bbr加速
 sudo echo net.core.default_qdisc=fq >> /etc/sysctl.conf
