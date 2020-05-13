@@ -1,9 +1,17 @@
 #!/bin/bash
 
-function blue(){ echo -e "\033[34m\033[01m $1 \033[0m" }
-function green(){ echo -e "\033[32m\033[01m $1 \033[0m" }
-function red(){ echo -e "\033[31m\033[01m $1 \033[0m" }
-function yellow(){ echo -e "\033[33m\033[01m $1 \033[0m" }
+function blue(){
+	echo -e "\033[34m\033[01m $1 \033[0m"
+}
+function green(){
+	echo -e "\033[32m\033[01m $1 \033[0m"
+}
+function red(){
+	echo -e "\033[31m\033[01m $1 \033[0m"
+}
+function yellow(){
+	echo -e "\033[33m\033[01m $1 \033[0m"
+}
 
 # 安装常用软件包
 sudo apt-get -y update && apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils
@@ -36,6 +44,7 @@ ipAddr=$(curl ifconfig.me)
 green "===============安装nginx==============="
 # 安装nginx
 sudo yum install -y nginx
+mkdir /etc/nginx/ssl
 
 # 删除默认配置
 sudo rm /etc/nginx/sites-enabled/default
@@ -215,7 +224,7 @@ sudo echo net.core.default_qdisc=fq >> /etc/sysctl.conf
 sudo echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf
 sysctl -p
 
-sysctl net.ipv4.tcp_available_congestion_control
+# sysctl net.ipv4.tcp_available_congestion_control
 
 #rootMF8-BIZ sysctl net.ipv4.tcp_available_congestion_control
 #net.ipv4.tcp_available_congestion_control = bbr cubic reno
