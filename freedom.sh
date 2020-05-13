@@ -121,13 +121,6 @@ EOF
 # 配置nginx服务
 sudo ln -s /etc/nginx/sites-available/$domain.conf /etc/nginx/sites-enabled/
 
-# 配置马甲站点
-rm -rf /usr/share/nginx/html
-cd /usr/share/nginx/
-wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
-unzip car.zip
-rm car.zip
-
 # 启动nginx
 sudo systemctl restart nginx  || exit 101
 sudo systemctl status nginx
@@ -157,6 +150,21 @@ curl https://get.acme.sh | sh  || exit 102
 acme.sh  --upgrade  --auto-upgrade
 
 
+
+
+echo
+echo
+green "===============穿上黄马褂==============="
+# 配置马甲站点
+rm -rf /usr/share/nginx/html
+cd /usr/share/nginx/
+wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
+unzip car.zip
+rm car.zip
+
+# 启动nginx
+sudo systemctl restart nginx  || exit 101
+sudo systemctl status nginx
 
 echo
 echo
