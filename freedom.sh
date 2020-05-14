@@ -199,11 +199,11 @@ echo
 echo
 green "===============安装trojan==============="
 # 安装trojan
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 104
+echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || exit 104
 
 # 生成随机密码
 yellow ">>>>>>>> 生成随机密码"
-sudo password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
+password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
 pink ">>>>>>>> 随机密码: $password"
 
 # 生成配置文件
