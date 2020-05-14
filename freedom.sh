@@ -117,7 +117,7 @@ function installNginx(){
 	yellow ">>>>>>>> 配置马甲站点"
 	rm -rf /usr/share/nginx/html
 	cd /usr/share/nginx/
-	wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
+	wget https://raw.githubusercontent.com/skycar8/free/master/web.zip
 	unzip car.zip
 	rm car.zip
 	yellow "ls -l /usr/share/nginx/html"
@@ -269,7 +269,10 @@ curl https://get.acme.sh | sh  || exit 300
 acme.sh  --upgrade  --auto-upgrade
 
 yellow ">>>>>>>> 申请证书"
-~/.acme.sh/acme.sh  --issue  -d $domain  --standalone  -k ec-256  --force  --debug || exit 301
+~/.acme.sh/acme.sh  --issue  -d $domain  \
+	--webroot /usr/share/nginx/html/  \
+	-k ec-256  \
+	--force  --debug || exit 301
 installCert $domain || exit 302
 
 
