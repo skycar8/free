@@ -10,11 +10,213 @@ function purple(){
 	echo -e "\033[45m\033[01m$1\033[0m"
 }
 
+
+function installCert(){
+	yellow ">>>>>>>> 安装证书"
+	~/.acme.sh/acme.sh  --installcert  -d  $1   \
+        --key-file   /etc/nginx/ssl/$1.key \
+        --fullchain-file /etc/nginx/ssl/$1.crt \
+        --reloadcmd  "service nginx force-reload" \
+        --ecc
+}
+
+
+function installNginx(){
+	echo
+	echo
+	green "===============安装nginx==============="
+	sudo apt-get install -y nginx || return 100
+	yellow ">>>> nginx安装成功"
+
+
+
+
+	echo
+	echo
+	green "===============配置nginx==============="
+	yellow ">>>>>>>> 删除默认配置"
+	sudo rm /etc/nginx/sites-enabled/*
+	echo "echo ls -l /etc/nginx/sites-enabled/"
+	ls -l /etc/nginx/sites-enabled/
+
+	yellow ">>>>>>>> 生成配置文件"
+	sudo cat > /etc/nginx/nginx.conf <<-EOF
+	user  root;
+	worker_processes  auto;
+	error_log /var/log/nginx/error.log;
+	pid /run/nginx.pid;
+	events {
+	    worker_connections  1024;
+	}
+	http {
+	    include       /etc/nginx/mime.types;
+	    default_type  application/octet-stream;
+	    log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+	                      '\$status \$body_bytes_sent "\$http_referer" '
+	                      '"\$http_user_agent" "\$http_x_forwarded_for"';
+	    access_log  /var/log/nginx/access.log  main;
+	    sendfile        on;
+	    #tcp_nopush     on;
+	    keepalive_timeout  120;
+	    client_max_body_size 20m;
+	    #gzip  on;
+	    include /etc/nginx/conf.d/*.conf;
+	    include /etc/nginx/sites-enabled/*;
+	}
+	EOF
+	echo "echo /etc/nginx/nginx.conf"
+	cat /etc/nginx/nginx.conf
+
+	cat > /etc/nginx/sites-available/$1.conf<<-EOF
+	server {
+	    listen 127.0.0.1:80 default_server;
+
+	    server_name $1;
+
+	    location / {
+	        root /usr/share/nginx/html;
+	        index index.php index.html index.htm;
+	    }
+	}
+
+	server {
+	    listen 127.0.0.1:80;
+
+	    server_name $2;
+	    return 301 https://$1\$request_uri;
+	}
+
+	server {
+	    listen 0.0.0.0:80;
+	    listen [::]:80;
+
+	    server_name $1;
+	    location /.well-known {
+	        root /usr/share/nginx/html;
+	        index index.php index.html index.htm;
+	    }
+	}
+
+	server {
+	    listen 0.0.0.0:80;
+	    listen [::]:80;
+
+	    server_name _;
+	    return 301 https://\$host\$request_uri;
+	}
+	EOF
+	echo
+	echo "echo /etc/nginx/sites-available/$1.conf"
+	cat /etc/nginx/sites-available/$1.conf
+
+	yellow ">>>>>>>> 配置nginx服务"
+	sudo ln -s /etc/nginx/sites-available/$1.conf /etc/nginx/sites-enabled/
+	echo "ls -l /etc/nginx/sites-enabled/"
+	ls -l /etc/nginx/sites-enabled/
+
+	yellow ">>>>>>>> 配置马甲站点"
+	rm -rf /usr/share/nginx/html
+	cd /usr/share/nginx/
+	wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
+	unzip car.zip
+	rm car.zip
+	yellow "ls -l /usr/share/nginx/html"
+	ls -l /usr/share/nginx/html
+
+	yellow "===启动nginx==="
+	sudo systemctl restart nginx  || return 101
+	sudo systemctl status nginx
+	yellow "===nginx启动成功==="
+
+	yellow ">>>>>>>> 设置nginx开机启动"
+	sudo systemctl enable nginx.service
+}
+
+
+function installTrojan(){
+	echo
+	echo
+	green "===============安装trojan==============="
+	# 安装trojan
+	echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 200
+
+	yellow ">>>>>>>> 生成随机密码"
+	password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
+	purple "随机密码: $password"
+
+	yellow ">>>>>>>> 生成trojan配置文件"
+	sudo cat > /usr/local/etc/trojan/config.json <<-EOF
+	{
+	    "run_type": "server",
+	    "local_addr": "0.0.0.0",
+	    "local_port": 443,
+	    "remote_addr": "127.0.0.1",
+	    "remote_port": 80,
+	    "password": [
+	        "$password"
+	    ],
+	    "log_level": 1,
+	    "ssl": {
+	        "cert": "/etc/nginx/ssl/$1.crt",
+	        "key": "/etc/nginx/ssl/$1.key",
+	        "key_password": "",
+	        "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
+	        "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
+	        "prefer_server_cipher": true,
+	        "alpn": [
+	            "http/1.1"
+	        ],
+	        "alpn_port_override": {
+	            "h2": 81
+	        },
+	        "reuse_session": true,
+	        "session_ticket": false,
+	        "session_timeout": 600,
+	        "plain_http_response": "",
+	        "curves": "",
+	        "dhparam": ""
+	    },
+	    "tcp": {
+	        "prefer_ipv4": false,
+	        "no_delay": true,
+	        "keep_alive": true,
+	        "reuse_port": false,
+	        "fast_open": false,
+	        "fast_open_qlen": 20
+	    },
+	    "mysql": {
+	        "enabled": false,
+	        "server_addr": "127.0.0.1",
+	        "server_port": 3306,
+	        "database": "trojan",
+	        "username": "trojan",
+	        "password": "",
+	        "cafile": ""
+	    }
+	}
+	EOF
+	echo "/usr/local/etc/trojan/config.json"
+	cat /usr/local/etc/trojan/config.json
+
+	yellow "===启动trojan==="
+	sudo systemctl restart trojan  || return 201
+	sudo systemctl status trojan
+	yellow "===trojan启动成功==="
+
+	yellow ">>>>>>>> 设置torjan开机启动"
+	sudo systemctl enable trojan.service
+}
+
+
+
 green "===============安装常用软件包==============="
 sudo apt-get -y update
 sudo apt-get -y install unzip zip wget sudo socat ntp ntpdate gcc git xz-utils || exit 100
 
-# 读取域名
+
+
+
+
 echo
 echo
 green "=========================================="
@@ -23,34 +225,6 @@ green "=========================================="
 read domain
 # 校验域名
 
-
-
-
-echo
-echo
-green "===============安装SSL证书==============="
-
-yellow ">>>>>>>> 创建证书文件夹"
-sudo mkdir /etc/nginx/ssl
-yellow "ls -l /etc/nginx/ssl"
-ls -l /etc/nginx/ssl
-
-yellow ">>>>>>>> 安装acme"
-curl https://get.acme.sh | sh  || exit 102
-
-
-yellow ">>>>>>>> 申请证书"
-~/.acme.sh/acme.sh  --issue  -d $domain  --standalone  -k ec-256  --force  --debug || exit 103
-
-yellow ">>>>>>>> 安装证书"
-~/.acme.sh/acme.sh  --installcert  -d  $domain   \
-        --key-file   /etc/nginx/ssl/$domain.key \
-        --fullchain-file /etc/nginx/ssl/fullchain.crt \
-        --reloadcmd  "service nginx force-reload" \
-        --ecc
-
-# 自动更新acme
-acme.sh  --upgrade  --auto-upgrade
 
 
 
@@ -69,116 +243,12 @@ green "===============获取本机ip地址==============="
 ipAddr=$(curl ifconfig.me)
 purple ">>>>>>>> 本机ip: $ipAddr"
 
-# 读取Cloudflare Email和Key
-# read CF_Email
-# 校验email
-# read CF_Key
-# 添加Cloudflare域名解析
 
 
 
-echo
-echo
-green "===============安装nginx==============="
+
 # 安装nginx
-sudo apt-get install -y nginx || exit 100
-yellow ">>>> nginx安装成功"
-
-
-
-
-echo
-echo
-green "===============配置nginx==============="
-yellow ">>>>>>>> 删除默认配置"
-sudo rm /etc/nginx/sites-enabled/*
-echo "echo ls -l /etc/nginx/sites-enabled/"
-ls -l /etc/nginx/sites-enabled/
-
-yellow ">>>>>>>> 生成配置文件"
-sudo cat > /etc/nginx/nginx.conf <<-EOF
-user  root;
-worker_processes  auto;
-error_log /var/log/nginx/error.log;
-pid /run/nginx.pid;
-events {
-    worker_connections  1024;
-}
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-    log_format  main  '\$remote_addr - \$remote_user [\$time_local] "\$request" '
-                      '\$status \$body_bytes_sent "\$http_referer" '
-                      '"\$http_user_agent" "\$http_x_forwarded_for"';
-    access_log  /var/log/nginx/access.log  main;
-    sendfile        on;
-    #tcp_nopush     on;
-    keepalive_timeout  120;
-    client_max_body_size 20m;
-    #gzip  on;
-    include /etc/nginx/conf.d/*.conf;
-    include /etc/nginx/sites-enabled/*;
-}
-EOF
-echo "echo /etc/nginx/nginx.conf"
-cat /etc/nginx/nginx.conf
-
-cat > /etc/nginx/sites-available/$domain.conf<<-EOF
-server {
-    listen 127.0.0.1:80 default_server;
-
-    server_name $domain;
-
-    location / {
-        root /usr/share/nginx/html;
-        index index.php index.html index.htm;
-    }
-    # error_page   500 502 503 504  /50x.html;
-    # location = /50x.html {
-    #     root   /usr/share/nginx/html;
-    # }
-}
-
-server {
-    listen 127.0.0.1:80;
-
-    server_name $ipAddr;
-    return 301 https://$domain\$request_uri;
-}
-
-server {
-    listen 0.0.0.0:80;
-    listen [::]:80;
-
-    server_name _;
-    return 301 https://\$host\$request_uri;
-}
-EOF
-echo
-echo "echo /etc/nginx/sites-available/$domain.conf"
-cat /etc/nginx/sites-available/$domain.conf
-
-yellow ">>>>>>>> 配置nginx服务"
-sudo ln -s /etc/nginx/sites-available/$domain.conf /etc/nginx/sites-enabled/
-echo "ls -l /etc/nginx/sites-enabled/"
-ls -l /etc/nginx/sites-enabled/
-
-yellow ">>>>>>>> 配置马甲站点"
-rm -rf /usr/share/nginx/html
-cd /usr/share/nginx/
-wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
-unzip car.zip
-rm car.zip
-yellow "ls -l /usr/share/nginx/html"
-ls -l /usr/share/nginx/html
-
-yellow "===启动nginx==="
-sudo systemctl restart nginx  || exit 101
-sudo systemctl status nginx
-yellow "===nginx启动成功==="
-
-yellow ">>>>>>>> 设置nginx开机启动"
-sudo systemctl enable nginx.service
+installNginx $domain $ipAddr || exit 100
 
 
 
@@ -186,75 +256,31 @@ sudo systemctl enable nginx.service
 
 echo
 echo
-green "===============安装trojan==============="
+green "===============安装SSL证书==============="
+
+yellow ">>>>>>>> 创建证书文件夹"
+sudo mkdir /etc/nginx/ssl
+yellow "ls -l /etc/nginx/ssl"
+ls -l /etc/nginx/ssl
+
+yellow ">>>>>>>> 安装acme"
+curl https://get.acme.sh | sh  || exit 300
+# 自动更新acme
+acme.sh  --upgrade  --auto-upgrade
+
+yellow ">>>>>>>> 申请证书"
+~/.acme.sh/acme.sh  --issue  -d $domain  --standalone  -k ec-256  --force  --debug || exit 301
+installCert $domain || exit 302
+
+
+
+
+
 # 安装trojan
-echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || exit 104
+installTrojan $domain || exit 200
 
-yellow ">>>>>>>> 生成随机密码"
-password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
-purple "随机密码: $password"
 
-yellow ">>>>>>>> 生成trojan配置文件"
-sudo cat > /usr/local/etc/trojan/config.json <<-EOF
-{
-    "run_type": "server",
-    "local_addr": "0.0.0.0",
-    "local_port": 443,
-    "remote_addr": "127.0.0.1",
-    "remote_port": 80,
-    "password": [
-        "$password"
-    ],
-    "log_level": 1,
-    "ssl": {
-        "cert": "/etc/nginx/ssl/fullchain.crt",
-        "key": "/etc/nginx/ssl/$domain.key",
-        "key_password": "",
-        "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
-        "cipher_tls13": "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384",
-        "prefer_server_cipher": true,
-        "alpn": [
-            "http/1.1"
-        ],
-        "alpn_port_override": {
-            "h2": 81
-        },
-        "reuse_session": true,
-        "session_ticket": false,
-        "session_timeout": 600,
-        "plain_http_response": "",
-        "curves": "",
-        "dhparam": ""
-    },
-    "tcp": {
-        "prefer_ipv4": false,
-        "no_delay": true,
-        "keep_alive": true,
-        "reuse_port": false,
-        "fast_open": false,
-        "fast_open_qlen": 20
-    },
-    "mysql": {
-        "enabled": false,
-        "server_addr": "127.0.0.1",
-        "server_port": 3306,
-        "database": "trojan",
-        "username": "trojan",
-        "password": "",
-        "cafile": ""
-    }
-}
-EOF
-echo "/usr/local/etc/trojan/config.json"
-cat /usr/local/etc/trojan/config.json
 
-yellow "===启动trojan==="
-sudo systemctl restart trojan  || exit 105
-sudo systemctl status trojan
-yellow "===trojan启动成功==="
-
-yellow ">>>>>>>> 设置torjan开机启动"
-sudo systemctl enable trojan.service
 
 
 echo
@@ -263,6 +289,9 @@ green "===============安装OK==============="
 green "trojan连接密码："
 green "$password"
 green "===================================="
+
+
+
 
 
 echo
