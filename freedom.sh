@@ -17,7 +17,8 @@ function pink(){
 }
 
 # 安装常用软件包
-sudo apt-get -y update && sudo apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils
+sudo apt-get -y update
+sudo apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils || exit 100
 
 # 读取域名
 echo
@@ -56,8 +57,39 @@ green "===============安装nginx==============="
 # 安装nginx
 sudo apt-get install -y nginx || exit 100
 yellow "nginx安装成功，开始配置nginx"
-sudo mkdir /etc/nginx/ssl
 
+# 启动nginx
+sudo systemctl restart nginx  || exit 101
+
+
+
+
+echo
+echo
+green "===============安装SSL证书==============="
+sudo mkdir /etc/nginx/ssl
+# 安装acme
+curl https://get.acme.sh | sh  || exit 102
+
+# 申请证书
+~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || exit 103
+# or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
+
+# 安装证书
+~/.acme.sh/acme.sh  --installcert  -d  $domain   \
+        --key-file   /etc/nginx/ssl/$domain.key \
+        --fullchain-file /etc/nginx/ssl/fullchain.cer \
+        --reloadcmd  "service nginx force-reload"
+
+# 自动更新证书
+acme.sh  --upgrade  --auto-upgrade
+
+
+
+
+echo
+echo
+green "===============配置nginx==============="
 # 删除默认配置
 sudo rm /etc/nginx/sites-enabled/default
 # 生成配置文件
@@ -81,8 +113,8 @@ http {
     keepalive_timeout  120;
     client_max_body_size 20m;
     #gzip  on;
-	include /etc/nginx/conf.d/*.conf;
-	include /etc/nginx/sites-enabled/*;
+    include ./conf.d/*.conf;
+    include ./sites-enabled/*;
 }
 EOF
 
@@ -106,7 +138,7 @@ server {
     listen 127.0.0.1:80;
 
     server_name $ipAddr;
-    return 301 https://$domain$request_uri;
+    return 301 https://$domain\$request_uri;
 }
 
 server {
@@ -114,47 +146,13 @@ server {
     listen [::]:80;
 
     server_name _;
-   	return 301 https://$host$request_uri;
+    return 301 https://\$host\$request_uri;
 }
 EOF
 
 # 配置nginx服务
 sudo ln -s /etc/nginx/sites-available/$domain.conf /etc/nginx/sites-enabled/
 
-# 启动nginx
-sudo systemctl restart nginx  || exit 101
-sudo systemctl status nginx
-
-# nginx开机启动
-sudo systemctl enable nginx.service
-
-
-
-echo
-echo
-green "===============安装SSL证书==============="
-# 安装acme
-curl https://get.acme.sh | sh  || exit 102
-
-# 申请证书
-~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || exit 103
-# or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
-
-# 安装证书
-~/.acme.sh/acme.sh  --installcert  -d  $domain   \
-        --key-file   /etc/nginx/ssl/$domain.key \
-        --fullchain-file /etc/nginx/ssl/fullchain.cer \
-        --reloadcmd  "service nginx force-reload"
-
-# 自动更新证书
-acme.sh  --upgrade  --auto-upgrade
-
-
-
-
-echo
-echo
-green "===============穿上黄马褂==============="
 # 配置马甲站点
 rm -rf /usr/share/nginx/html
 cd /usr/share/nginx/
@@ -162,9 +160,14 @@ wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
 unzip car.zip
 rm car.zip
 
-# 启动nginx
+# 重启nginx
 sudo systemctl restart nginx  || exit 101
 sudo systemctl status nginx
+
+# nginx开机启动
+sudo systemctl enable nginx.service
+
+
 
 echo
 echo
