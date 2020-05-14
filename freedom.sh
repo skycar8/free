@@ -147,7 +147,7 @@ cd /usr/share/nginx/
 wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
 unzip car.zip
 rm car.zip
-echo "ls -l /usr/share/nginx/html"
+yellow "ls -l /usr/share/nginx/html"
 ls -l /usr/share/nginx/html
 
 yellow "===启动nginx==="
@@ -155,7 +155,7 @@ sudo systemctl restart nginx  || exit 101
 sudo systemctl status nginx
 yellow "===nginx启动成功==="
 
-yellow ">>>>>>>> nginx开机启动"
+yellow ">>>>>>>> 设置nginx开机启动"
 sudo systemctl enable nginx.service
 
 
@@ -167,7 +167,7 @@ green "===============安装SSL证书==============="
 
 yellow ">>>>>>>> 创建证书文件夹"
 sudo mkdir /etc/nginx/ssl
-echo "ls -l /etc/nginx/ssl"
+yellow "ls -l /etc/nginx/ssl"
 ls -l /etc/nginx/ssl
 
 yellow ">>>>>>>> 安装acme"
@@ -199,7 +199,7 @@ echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw
 
 yellow ">>>>>>>> 生成随机密码"
 password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
-purple ">>>>>>>> 随机密码: $password"
+purple "随机密码: $password"
 
 yellow ">>>>>>>> 生成trojan配置文件"
 sudo cat > /usr/local/etc/trojan/config.json <<-EOF
@@ -260,7 +260,7 @@ sudo systemctl start trojan  || exit 105
 sudo systemctl status trojan
 yellow "===trojan启动成功==="
 
-yellow ">>>>>>>> torjan开机启动"
+yellow ">>>>>>>> 设置torjan开机启动"
 sudo systemctl enable trojan.service
 
 
@@ -282,9 +282,11 @@ sudo echo net.core.default_qdisc=fq >> /etc/sysctl.conf
 sudo echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf
 sysctl -p
 
+yellow ">>>>>>>> sysctl net.ipv4.tcp_available_congestion_control"
 sysctl net.ipv4.tcp_available_congestion_control
 #rootMF8-BIZ sysctl net.ipv4.tcp_available_congestion_control
 #net.ipv4.tcp_available_congestion_control = bbr cubic reno
 
+yellow ">>>>>>>> lsmod | grep bbr"
 lsmod | grep bbr
 #tcp_bbr                20480  11
