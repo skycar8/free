@@ -72,6 +72,8 @@ echo
 green "===============配置nginx==============="
 yellow ">>>>>>>> 删除默认配置"
 sudo rm /etc/nginx/sites-enabled/*
+ls -l /etc/nginx/sites-enabled/
+
 yellow ">>>>>>>> 生成配置文件"
 sudo cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
@@ -97,6 +99,7 @@ http {
     include /etc/nginx/sites-enabled/*;
 }
 EOF
+cat /etc/nginx/nginx.conf
 
 cat > /etc/nginx/sites-available/$domain.conf<<-EOF
 server {
@@ -126,12 +129,18 @@ server {
     listen [::]:80;
 
     server_name _;
-    return 301 https://\$host\$request_uri;
+    # return 301 https://\$host\$request_uri;
+    location / {
+        root /usr/share/nginx/html;
+        index index.php index.html index.htm;
+    }
 }
 EOF
+cat /etc/nginx/sites-available/$domain.conf
 
 yellow ">>>>>>>> 配置nginx服务"
 sudo ln -s /etc/nginx/sites-available/$domain.conf /etc/nginx/sites-enabled/
+ls -l /etc/nginx/sites-enabled/
 
 yellow ">>>>>>>> 配置马甲站点"
 rm -rf /usr/share/nginx/html
@@ -139,6 +148,7 @@ cd /usr/share/nginx/
 wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
 unzip car.zip
 rm car.zip
+ls -l /usr/share/nginx/html
 
 yellow "===启动nginx==="
 sudo systemctl restart nginx  || exit 101
