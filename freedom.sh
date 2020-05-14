@@ -71,7 +71,7 @@ echo
 echo
 green "===============配置nginx==============="
 # 删除默认配置
-sudo rm /etc/nginx/sites-enabled/default
+sudo rm /etc/nginx/sites-enabled/*
 # 生成配置文件
 sudo cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
@@ -93,8 +93,8 @@ http {
     keepalive_timeout  120;
     client_max_body_size 20m;
     #gzip  on;
-    include ./conf.d/*.conf;
-    include ./sites-enabled/*;
+    include etc/nginx/conf.d/*.conf;
+    include etc/nginx/sites-enabled/*;
 }
 EOF
 
@@ -140,9 +140,10 @@ wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
 unzip car.zip
 rm car.zip
 
-# 重启nginx
+purple "===启动nginx==="
 sudo systemctl restart nginx  || exit 101
 sudo systemctl status nginx
+purple "===nginx启动成功==="
 
 # nginx开机启动
 sudo systemctl enable nginx.service
@@ -235,9 +236,10 @@ sudo cat > /usr/local/etc/trojan/config.json <<-EOF
 }
 EOF
 
-# 启动trojan
+purple "===启动trojan==="
 sudo systemctl restart trojan  || exit 105
 sudo systemctl status trojan
+purple "===trojan启动成功==="
 
 # torjan开机启动
 sudo systemctl enable trojan.service
