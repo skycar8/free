@@ -12,7 +12,7 @@ function purple(){
 
 green "===============安装常用软件包==============="
 sudo apt-get -y update
-sudo apt-get -y install unzip zip wget curl sudo socat ntp ntpdate gcc git xz-utils || exit 100
+sudo apt-get -y install unzip zip wget sudo socat ntp ntpdate gcc git xz-utils || exit 100
 
 # 读取域名
 echo
@@ -22,6 +22,38 @@ green " 输入解析到此VPS的域名"
 green "=========================================="
 read domain
 # 校验域名
+
+
+
+
+echo
+echo
+green "===============安装SSL证书==============="
+
+yellow ">>>>>>>> 创建证书文件夹"
+sudo mkdir /etc/nginx/ssl
+yellow "ls -l /etc/nginx/ssl"
+ls -l /etc/nginx/ssl
+
+yellow ">>>>>>>> 安装acme"
+curl https://get.acme.sh | sh  || exit 102
+
+
+yellow ">>>>>>>> 申请证书"
+~/.acme.sh/acme.sh  --issue  -d $domain  --standalone  -k ec-256  --force  --debug || exit 103
+
+yellow ">>>>>>>> 安装证书"
+~/.acme.sh/acme.sh  --installcert  -d  $domain   \
+        --key-file   /etc/nginx/ssl/$domain.key \
+        --fullchain-file /etc/nginx/ssl/fullchain.crt \
+        --reloadcmd  "service nginx force-reload" \
+        --ecc
+
+# 自动更新acme
+acme.sh  --upgrade  --auto-upgrade
+
+
+
 
 echo
 echo
@@ -51,12 +83,6 @@ green "===============安装nginx==============="
 # 安装nginx
 sudo apt-get install -y nginx || exit 100
 yellow ">>>> nginx安装成功"
-
-# purple "===启动nginx==="
-# sudo mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/$domain
-# sudo systemctl restart nginx  || exit 101
-# sudo systemctl status nginx
-# purple "===nginx启动成功==="
 
 
 
@@ -154,35 +180,6 @@ yellow "===nginx启动成功==="
 yellow ">>>>>>>> 设置nginx开机启动"
 sudo systemctl enable nginx.service
 
-
-
-
-echo
-echo
-green "===============安装SSL证书==============="
-
-yellow ">>>>>>>> 创建证书文件夹"
-sudo mkdir /etc/nginx/ssl
-yellow "ls -l /etc/nginx/ssl"
-ls -l /etc/nginx/ssl
-
-yellow ">>>>>>>> 安装acme"
-curl https://get.acme.sh | sh  || exit 102
-
-
-yellow ">>>>>>>> 申请证书"
-~/.acme.sh/acme.sh  --issue  -d $domain  --webroot  /usr/share/nginx/html/  -k ec-256  --force  --debug || exit 103
-# or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
-
-yellow ">>>>>>>> 安装证书"
-~/.acme.sh/acme.sh  --installcert  -d  $domain   \
-        --key-file   /etc/nginx/ssl/$domain.key \
-        --fullchain-file /etc/nginx/ssl/fullchain.crt \
-        --reloadcmd  "service nginx force-reload" \
-        --ecc
-
-# 自动更新证书
-acme.sh  --upgrade  --auto-upgrade
 
 
 
