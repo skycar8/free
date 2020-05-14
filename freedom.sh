@@ -1,13 +1,13 @@
 #!/bin/bash
 
 function green(){
-	echo -e "\033[32m\033[01m$1 \033[0m"
+	echo -e "\033[32m\033[01m$1\033[0m"
 }
 function yellow(){
-	echo -e "\033[33m\033[01m$1 \033[0m"
+	echo -e "\033[33m\033[01m$1\033[0m"
 }
 function purple(){
-	echo -e "\033[45m\033[01m$1 \033[0m"
+	echo -e "\033[45m\033[01m$1\033[0m"
 }
 
 green "===============安装常用软件包==============="
@@ -125,11 +125,7 @@ server {
     listen [::]:80;
 
     server_name _;
-    # return 301 https://\$host\$request_uri;
-    location / {
-        root /usr/share/nginx/html;
-        index index.php index.html index.htm;
-    }
+    return 301 https://\$host\$request_uri;
 }
 EOF
 echo
@@ -256,7 +252,7 @@ echo "/usr/local/etc/trojan/config.json"
 cat /usr/local/etc/trojan/config.json
 
 yellow "===启动trojan==="
-sudo systemctl start trojan  || exit 105
+sudo systemctl restart trojan  || exit 105
 sudo systemctl status trojan
 yellow "===trojan启动成功==="
 
@@ -267,11 +263,9 @@ sudo systemctl enable trojan.service
 echo
 echo
 green "===============安装OK==============="
-green "trojan连接密码：$password"
-
-# 上传trojan配置文件到github
-# 导出证书-上传github-OpenWrt更新证书-Synology更新证书
-
+green "trojan连接密码："
+green "$password"
+green "===================================="
 
 
 echo
