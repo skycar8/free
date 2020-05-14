@@ -1,19 +1,19 @@
 #!/bin/bash
 
 function blue(){
-	echo -e "\e[34m\e[01m $1 \e[0m"
+	echo -e "\033[34m\033[01m $1 \033[0m"
 }
 function green(){
-	echo -e "\e[32m\e[01m $1 \e[0m"
+	echo -e "\033[32m\033[01m $1 \033[0m"
 }
 function red(){
-	echo -e "\e[31m\e[01m $1 \e[0m"
+	echo -e "\033[31m\033[01m $1 \033[0m"
 }
 function yellow(){
-	echo -e "\e[33m\e[01m $1 \e[0m"
+	echo -e "\033[33m\033[01m $1 \033[0m"
 }
-function pink(){
-	echo -e "\e[35m\e[01m $1 \e[0m"
+function purple(){
+	echo -e "\033[45m\033[01m $1 \033[0m"
 }
 
 # 安装常用软件包
@@ -23,9 +23,9 @@ sudo apt-get -y install unzip zip wget curl sudo socat ntp ntpdate gcc git xz-ut
 # 读取域名
 echo
 echo
-green "======================"
+green "=========================================="
 green " 输入解析到此VPS的域名"
-green "======================"
+green "=========================================="
 read domain
 # 校验域名
 
@@ -41,7 +41,7 @@ green "===============获取本机ip地址==============="
 # curl myip.dnsomatic.com
 # curl ip.appspot.com
 ipAddr=$(curl ifconfig.me)
-pink "ip: $ipAddr"
+purple ">>>>>>>> 本机ip: $ipAddr"
 
 # 读取Cloudflare Email和Key
 # read CF_Email
@@ -56,33 +56,13 @@ echo
 green "===============安装nginx==============="
 # 安装nginx
 sudo apt-get install -y nginx || exit 100
-yellow "nginx安装成功，开始配置nginx"
+yellow ">>>> nginx安装成功"
 
-# 启动nginx
-sudo systemctl restart nginx  || exit 101
-
-
-
-
-echo
-echo
-green "===============安装SSL证书==============="
-sudo mkdir /etc/nginx/ssl
-# 安装acme
-curl https://get.acme.sh | sh  || exit 102
-
-# 申请证书
-~/.acme.sh/acme.sh  --issue  -d $domain  --nginx || exit 103
-# or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
-
-# 安装证书
-~/.acme.sh/acme.sh  --installcert  -d  $domain   \
-        --key-file   /etc/nginx/ssl/$domain.key \
-        --fullchain-file /etc/nginx/ssl/fullchain.cer \
-        --reloadcmd  "service nginx force-reload"
-
-# 自动更新证书
-acme.sh  --upgrade  --auto-upgrade
+# purple "===启动nginx==="
+# sudo mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/$domain
+# sudo systemctl restart nginx  || exit 101
+# sudo systemctl status nginx
+# purple "===nginx启动成功==="
 
 
 
@@ -169,6 +149,31 @@ sudo systemctl enable nginx.service
 
 
 
+
+echo
+echo
+green "===============安装SSL证书==============="
+sudo mkdir /etc/nginx/ssl
+# 安装acme
+curl https://get.acme.sh | sh  || exit 102
+
+# 申请证书
+~/.acme.sh/acme.sh  --issue  -d $domain  --nginx  -k ec-256  --debug || exit 103
+# or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
+
+# 安装证书
+~/.acme.sh/acme.sh  --installcert  -d  $domain   \
+        --key-file   /etc/nginx/ssl/$domain.key \
+        --fullchain-file /etc/nginx/ssl/fullchain.crt \
+        --reloadcmd  "service nginx force-reload" \
+        --ecc
+
+# 自动更新证书
+acme.sh  --upgrade  --auto-upgrade
+
+
+
+
 echo
 echo
 green "===============安装trojan==============="
@@ -191,7 +196,7 @@ sudo cat > /usr/local/etc/trojan/config.json <<-EOF
     ],
     "log_level": 1,
     "ssl": {
-        "cert": "/etc/nginx/ssl/fullchain.cer",
+        "cert": "/etc/nginx/ssl/fullchain.crt",
         "key": "/etc/nginx/ssl/$domain.key",
         "key_password": "",
         "cipher": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384",
