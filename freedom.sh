@@ -1,22 +1,16 @@
 #!/bin/bash
 
-function blue(){
-	echo -e "\033[34m\033[01m $1 \033[0m"
-}
 function green(){
-	echo -e "\033[32m\033[01m $1 \033[0m"
-}
-function red(){
-	echo -e "\033[31m\033[01m $1 \033[0m"
+	echo -e "\033[32m\033[01m$1 \033[0m"
 }
 function yellow(){
-	echo -e "\033[33m\033[01m $1 \033[0m"
+	echo -e "\033[33m\033[01m$1 \033[0m"
 }
 function purple(){
-	echo -e "\033[45m\033[01m $1 \033[0m"
+	echo -e "\033[45m\033[01m$1 \033[0m"
 }
 
-# 安装常用软件包
+green "===============安装常用软件包==============="
 sudo apt-get -y update
 sudo apt-get -y install unzip zip wget curl sudo socat ntp ntpdate gcc git xz-utils || exit 100
 
@@ -72,6 +66,7 @@ echo
 green "===============配置nginx==============="
 yellow ">>>>>>>> 删除默认配置"
 sudo rm /etc/nginx/sites-enabled/*
+echo "echo ls -l /etc/nginx/sites-enabled/"
 ls -l /etc/nginx/sites-enabled/
 
 yellow ">>>>>>>> 生成配置文件"
@@ -99,7 +94,7 @@ http {
     include /etc/nginx/sites-enabled/*;
 }
 EOF
-echo "/etc/nginx/nginx.conf"
+echo "echo /etc/nginx/nginx.conf"
 cat /etc/nginx/nginx.conf
 
 cat > /etc/nginx/sites-available/$domain.conf<<-EOF
@@ -137,7 +132,8 @@ server {
     }
 }
 EOF
-echo "/etc/nginx/sites-available/$domain.conf"
+echo
+echo "echo /etc/nginx/sites-available/$domain.conf"
 cat /etc/nginx/sites-available/$domain.conf
 
 yellow ">>>>>>>> 配置nginx服务"
@@ -159,7 +155,7 @@ sudo systemctl restart nginx  || exit 101
 sudo systemctl status nginx
 yellow "===nginx启动成功==="
 
-# nginx开机启动
+yellow ">>>>>>>> nginx开机启动"
 sudo systemctl enable nginx.service
 
 
@@ -201,12 +197,11 @@ green "===============安装trojan==============="
 # 安装trojan
 echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || exit 104
 
-# 生成随机密码
 yellow ">>>>>>>> 生成随机密码"
 password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
-pink ">>>>>>>> 随机密码: $password"
+purple ">>>>>>>> 随机密码: $password"
 
-# 生成配置文件
+yellow ">>>>>>>> 生成trojan配置文件"
 sudo cat > /usr/local/etc/trojan/config.json <<-EOF
 {
     "run_type": "server",
@@ -215,7 +210,7 @@ sudo cat > /usr/local/etc/trojan/config.json <<-EOF
     "remote_addr": "127.0.0.1",
     "remote_port": 80,
     "password": [
-        $password
+        "$password"
     ],
     "log_level": 1,
     "ssl": {
@@ -261,11 +256,11 @@ echo "/usr/local/etc/trojan/config.json"
 cat /usr/local/etc/trojan/config.json
 
 yellow "===启动trojan==="
-sudo systemctl restart trojan  || exit 105
+sudo systemctl start trojan  || exit 105
 sudo systemctl status trojan
 yellow "===trojan启动成功==="
 
-# torjan开机启动
+yellow ">>>>>>>> torjan开机启动"
 sudo systemctl enable trojan.service
 
 
@@ -287,8 +282,7 @@ sudo echo net.core.default_qdisc=fq >> /etc/sysctl.conf
 sudo echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf
 sysctl -p
 
-# sysctl net.ipv4.tcp_available_congestion_control
-
+sysctl net.ipv4.tcp_available_congestion_control
 #rootMF8-BIZ sysctl net.ipv4.tcp_available_congestion_control
 #net.ipv4.tcp_available_congestion_control = bbr cubic reno
 
