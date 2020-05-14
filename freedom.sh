@@ -99,6 +99,7 @@ http {
     include /etc/nginx/sites-enabled/*;
 }
 EOF
+echo "/etc/nginx/nginx.conf"
 cat /etc/nginx/nginx.conf
 
 cat > /etc/nginx/sites-available/$domain.conf<<-EOF
@@ -136,10 +137,12 @@ server {
     }
 }
 EOF
+echo "/etc/nginx/sites-available/$domain.conf"
 cat /etc/nginx/sites-available/$domain.conf
 
 yellow ">>>>>>>> 配置nginx服务"
 sudo ln -s /etc/nginx/sites-available/$domain.conf /etc/nginx/sites-enabled/
+echo "ls -l /etc/nginx/sites-enabled/"
 ls -l /etc/nginx/sites-enabled/
 
 yellow ">>>>>>>> 配置马甲站点"
@@ -148,6 +151,7 @@ cd /usr/share/nginx/
 wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
 unzip car.zip
 rm car.zip
+echo "ls -l /usr/share/nginx/html"
 ls -l /usr/share/nginx/html
 
 yellow "===启动nginx==="
@@ -164,15 +168,21 @@ sudo systemctl enable nginx.service
 echo
 echo
 green "===============安装SSL证书==============="
+
+yellow ">>>>>>>> 创建证书文件夹"
 sudo mkdir /etc/nginx/ssl
-# 安装acme
+echo "ls -l /etc/nginx/ssl"
+ls -l /etc/nginx/ssl
+
+yellow ">>>>>>>> 安装acme"
 curl https://get.acme.sh | sh  || exit 102
 
-# 申请证书
-~/.acme.sh/acme.sh  --issue  -d $domain  --nginx  -k ec-256  --debug || exit 103
+
+yellow ">>>>>>>> 申请证书"
+~/.acme.sh/acme.sh  --issue  -d $domain  --webroot  /usr/share/nginx/html/  -k ec-256  --force  --debug || exit 103
 # or ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /usr/share/nginx/html/
 
-# 安装证书
+yellow ">>>>>>>> 安装证书"
 ~/.acme.sh/acme.sh  --installcert  -d  $domain   \
         --key-file   /etc/nginx/ssl/$domain.key \
         --fullchain-file /etc/nginx/ssl/fullchain.crt \
@@ -192,7 +202,9 @@ green "===============安装trojan==============="
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 104
 
 # 生成随机密码
+yellow ">>>>>>>> 生成随机密码"
 sudo password=$(cat /dev/urandom | head -1 | md5sum | head -c 32)
+pink ">>>>>>>> 随机密码: $password"
 
 # 生成配置文件
 sudo cat > /usr/local/etc/trojan/config.json <<-EOF
@@ -245,6 +257,8 @@ sudo cat > /usr/local/etc/trojan/config.json <<-EOF
     }
 }
 EOF
+echo "/usr/local/etc/trojan/config.json"
+cat /usr/local/etc/trojan/config.json
 
 yellow "===启动trojan==="
 sudo systemctl restart trojan  || exit 105
