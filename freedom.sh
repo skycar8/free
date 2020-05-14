@@ -117,7 +117,7 @@ function installNginx(){
 	yellow ">>>>>>>> 配置马甲站点"
 	rm -rf /usr/share/nginx/html
 	cd /usr/share/nginx/
-	wget https://raw.githubusercontent.com/skycar8/free/master/web.zip
+	wget https://raw.githubusercontent.com/skycar8/free/master/car.zip
 	unzip car.zip
 	rm car.zip
 	yellow "ls -l /usr/share/nginx/html"
