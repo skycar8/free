@@ -95,6 +95,9 @@ function installNginx(){
 	        root /usr/share/nginx/html;
 	        index index.php index.html index.htm;
 	    }
+	    location / {
+	        return 301 https://\$host\$request_uri;
+	    }
 	}
 
 	server {
