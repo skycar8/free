@@ -18,7 +18,7 @@ function pink(){
 
 # 安装常用软件包
 sudo apt-get -y update
-sudo apt-get -y install unzip zip wget curl nano sudo ufw socat ntp ntpdate gcc git xz-utils || exit 100
+sudo apt-get -y install unzip zip wget curl sudo socat ntp ntpdate gcc git xz-utils || exit 100
 
 # 读取域名
 echo
