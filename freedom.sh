@@ -206,10 +206,124 @@ function installTrojan(){
 	sudo systemctl status trojan
 	yellow "===trojan启动成功==="
 
+    yellow ">>>>>>>> 设置trojan自动更新证书"
+    echo '0 0 1 * * killall -s SIGUSR1 trojan' >> /var/spool/cron/crontabs/root
+    cat /var/spool/cron/crontabs/root
+
 	yellow ">>>>>>>> 设置torjan开机启动"
 	sudo systemctl enable trojan.service
 }
 
+
+function installV2ray(){
+
+    green "===============安装v2ray==============="
+    # 安装v2ray
+    echo y | sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
+    
+    yellow ">>>>>>>> 生成uuid"
+    uuid=$(curl https://www.uuidgenerator.net/api/version4)
+    purple "uuid: $uuid"
+    
+    yellow ">>>>>>>> 生成v2ray配置文件"
+    cat > /etc/v2ray/config.json <<-EOF
+    {
+      "log" : {
+        "access": "/var/log/v2ray/access.log",
+        "error": "/var/log/v2ray/error.log",
+        "loglevel": "debug"
+      },
+      "inbounds": [{
+        "port": 10001,
+        "listen": "127.0.0.1",
+        "protocol": "vmess",
+        "settings": {
+          "clients": [
+            {
+              "id": "$uuid",
+              "level": 1,
+              "alterId": 64,
+              "security": "aes-128-gcm"
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "ws",
+          "wsSettings": {
+            "path": "/free"
+          }
+        }
+      }],
+      "outbounds": [{
+        "protocol": "freedom",
+        "settings": {}
+      },{
+        "protocol": "blackhole",
+        "settings": {},
+        "tag": "blocked"
+      }],
+      "routing": {
+        "rules": [
+          {
+            "type": "field",
+            "ip": ["geoip:private"],
+            "outboundTag": "blocked"
+          }
+        ]
+      }
+    }
+    EOF
+    echo "/etc/v2ray/config.json"
+    cat /etc/v2ray/config.json
+    
+    yellow ">>>>>>>> nginx添加对v2ray的监听"
+    cat >> /etc/nginx/sites-available/$1.conf <<-EOF
+    server {
+        listen 127.0.0.1:80 default_server;
+
+        server_name $1;
+
+        location / {
+            root /usr/share/nginx/html;
+            index index.php index.html index.htm;
+        }
+    }
+    server {
+        listen 127.0.0.1:80;
+        server_name $1;
+
+        location /free { #与 V2Ray 配置中的 path 保持一致
+            if (\$http_upgrade != "websocket") { #WebSocket协商失败时返回404
+                return 404;
+            }
+            proxy_redirect off;
+            proxy_pass http://127.0.0.1:10001; #假设WebSocket监听在环回地址的10001端口上
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host \$http_host;
+
+            # Show realip in v2ray access.log
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        }
+    }
+    EOF
+    echo "/etc/nginx/sites-available/$1.conf"
+    cat /etc/nginx/sites-available/$1.conf
+    
+    yellow ">>>>>>>> 重启nginx"
+    systemctl restart nginx
+    sudo systemctl status nginx
+    
+    yellow "===启动v2ray==="
+    sudo systemctl restart v2ray  || return 401
+    sudo systemctl status v2ray
+    yellow "===v2ray启动成功==="
+
+    yellow ">>>>>>>> 设置v2ray开机启动"
+    sudo systemctl enable v2ray.service
+}
 
 
 green "===============安装常用软件包==============="
@@ -223,7 +337,7 @@ sudo apt-get -y install unzip zip wget sudo socat ntp ntpdate gcc git xz-utils |
 echo
 echo
 green "=========================================="
-green " 输入解析到此VPS的域名"
+green "输入解析到此VPS的域名"
 green "=========================================="
 read domain
 # 校验域名
@@ -291,13 +405,26 @@ installTrojan $domain || exit 200
 
 echo
 echo
-green "===============安装OK==============="
+green "===============trojan安装OK==============="
 green "trojan连接密码："
 green "$password"
-green "===================================="
+green "========================================="
 
 
 
+
+
+echo
+echo
+green "=========================================="
+green "是否安装v2ray？输入y:安装， 其它:不安装"
+green "=========================================="
+read input
+if [ input == "y" || input == "yes"];then
+installV2ray domain
+else
+yellow ">>>>>>>> 跳过v2ray安装"
+fi
 
 
 echo
