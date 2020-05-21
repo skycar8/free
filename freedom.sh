@@ -235,17 +235,7 @@ function installV2ray(){
     
     
     
-    yellow ">>>>>>>> 重启nginx"
-    systemctl restart nginx
-    sudo systemctl status nginx
     
-    yellow "===启动v2ray==="
-    sudo systemctl restart v2ray  || return 401
-    sudo systemctl status v2ray
-    yellow "===v2ray启动成功==="
-
-    yellow ">>>>>>>> 设置v2ray开机启动"
-    sudo systemctl enable v2ray.service
 }
 
 
