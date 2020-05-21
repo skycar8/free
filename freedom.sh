@@ -230,6 +230,8 @@ function installV2ray(){
     sudo cat > /etc/v2ray/config.json <<-EOF
     tes
     EOF
+    echo "/etc/v2ray/config.json"
+    cat /etc/v2ray/config.json
     
     yellow ">>>>>>>> nginx添加对v2ray的监听"
     sudo cat >> /etc/nginx/sites-available/$1.conf <<-EOF
