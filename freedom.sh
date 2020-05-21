@@ -226,7 +226,7 @@ function installV2ray(){
     purple "uuid: $uuid"
     
     yellow ">>>>>>>> 生成v2ray配置文件"
-    cat > /etc/v2ray/config.json <<-EOF
+    sudo cat > /etc/v2ray/config.json <<-EOF
     {
       "log" : {
         "access": "/var/log/v2ray/access.log",
@@ -277,17 +277,7 @@ function installV2ray(){
     cat /etc/v2ray/config.json
     
     yellow ">>>>>>>> nginx添加对v2ray的监听"
-    cat >> /etc/nginx/sites-available/$1.conf <<-EOF
-    server {
-        listen 127.0.0.1:80 default_server;
-
-        server_name $1;
-
-        location / {
-            root /usr/share/nginx/html;
-            index index.php index.html index.htm;
-        }
-    }
+    sudo cat >> /etc/nginx/sites-available/$1.conf <<-EOF
     server {
         listen 127.0.0.1:80;
         server_name $1;
@@ -421,7 +411,7 @@ green "是否安装v2ray？输入y:安装， 其它:不安装"
 green "=========================================="
 read input
 if [ input == "y" || input == "yes"];then
-installV2ray domain
+installV2ray $domain
 else
 yellow ">>>>>>>> 跳过v2ray安装"
 fi
