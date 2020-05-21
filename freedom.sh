@@ -228,51 +228,7 @@ function installV2ray(){
     
     yellow ">>>>>>>> 生成v2ray配置文件"
     sudo cat > /etc/v2ray/config.json <<-EOF
-    {
-      "log" : {
-        "access": "/var/log/v2ray/access.log",
-        "error": "/var/log/v2ray/error.log",
-        "loglevel": "debug"
-      },
-      "inbounds": [{
-        "port": 10001,
-        "listen": "127.0.0.1",
-        "protocol": "vmess",
-        "settings": {
-          "clients": [
-            {
-              "id": "$uuid",
-              "level": 1,
-              "alterId": 64,
-              "security": "aes-128-gcm"
-            }
-          ]
-        },
-        "streamSettings": {
-          "network": "ws",
-          "wsSettings": {
-            "path": "/free"
-          }
-        }
-      }],
-      "outbounds": [{
-        "protocol": "freedom",
-        "settings": {}
-      },{
-        "protocol": "blackhole",
-        "settings": {},
-        "tag": "blocked"
-      }],
-      "routing": {
-        "rules": [
-          {
-            "type": "field",
-            "ip": ["geoip:private"],
-            "outboundTag": "blocked"
-          }
-        ]
-      }
-    }
+    test
     EOF
     echo "/etc/v2ray/config.json"
     cat /etc/v2ray/config.json
