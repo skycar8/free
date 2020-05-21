@@ -220,9 +220,7 @@ function installV2ray(){
     echo
     green "===============安装v2ray==============="
     # 安装v2ray
-    # sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
-    curl -O https://install.direct/go.sh
-    sudo bash go.sh
+    sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
     
     yellow ">>>>>>>> 生成uuid"
     uuid=$(curl https://www.uuidgenerator.net/api/version4)
@@ -279,31 +277,7 @@ function installV2ray(){
     echo "/etc/v2ray/config.json"
     cat /etc/v2ray/config.json
     
-    yellow ">>>>>>>> nginx添加对v2ray的监听"
-    sudo cat >> /etc/nginx/sites-available/$1.conf <<-EOF
-    server {
-        listen 127.0.0.1:80;
-        server_name $1;
-
-        location /free { #与 V2Ray 配置中的 path 保持一致
-            if (\$http_upgrade != "websocket") { #WebSocket协商失败时返回404
-                return 404;
-            }
-            proxy_redirect off;
-            proxy_pass http://127.0.0.1:10001; #假设WebSocket监听在环回地址的10001端口上
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade \$http_upgrade;
-            proxy_set_header Connection "upgrade";
-            proxy_set_header Host \$http_host;
-
-            # Show realip in v2ray access.log
-            proxy_set_header X-Real-IP \$remote_addr;
-            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        }
-    }
-    EOF
-    echo "/etc/nginx/sites-available/$1.conf"
-    cat /etc/nginx/sites-available/$1.conf
+    
     
     yellow ">>>>>>>> 重启nginx"
     systemctl restart nginx
