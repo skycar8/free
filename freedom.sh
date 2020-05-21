@@ -216,10 +216,11 @@ function installTrojan(){
 
 
 function installV2ray(){
-
+    echo
+    echo
     green "===============安装v2ray==============="
     # 安装v2ray
-    echo y | sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
+    sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
     
     yellow ">>>>>>>> 生成uuid"
     uuid=$(curl https://www.uuidgenerator.net/api/version4)
@@ -415,6 +416,18 @@ installV2ray $domain
 else
 yellow ">>>>>>>> 跳过v2ray安装"
 fi
+
+
+
+
+echo
+echo
+green "===============v2ray安装OK==============="
+green "v2ray uuid"
+green "$uuid"
+green "========================================="
+
+
 
 
 echo
