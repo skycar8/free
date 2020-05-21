@@ -226,6 +226,11 @@ function installV2ray(){
     uuid=$(curl https://www.uuidgenerator.net/api/version4)
     purple "uuid: $uuid"
     
+    yellow ">>>>>>>> 生成v2ray配置文件"
+    sudo cat > /etc/v2ray/config.json <<-EOF
+    tes
+    EOF
+    
     yellow ">>>>>>>> nginx添加对v2ray的监听"
     sudo cat >> /etc/nginx/sites-available/$1.conf <<-EOF
     server {
