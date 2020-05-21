@@ -220,7 +220,9 @@ function installV2ray(){
     echo
     green "===============安装v2ray==============="
     # 安装v2ray
-    sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
+    # sudo bash -c "$(curl -fsSL https://install.direct/go.sh)" || return 400
+    curl -O https://install.direct/go.sh
+    sudo bash go.sh
     
     yellow ">>>>>>>> 生成uuid"
     uuid=$(curl https://www.uuidgenerator.net/api/version4)
