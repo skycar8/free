@@ -206,9 +206,9 @@ function installTrojan(){
 	sudo systemctl status trojan
 	yellow "===trojan启动成功==="
 
-    yellow ">>>>>>>> 设置trojan自动更新证书"
-    echo '0 0 1 * * killall -s SIGUSR1 trojan' >> /var/spool/cron/crontabs/root
-    cat /var/spool/cron/crontabs/root
+    	yellow ">>>>>>>> 设置trojan自动更新证书"
+    	echo '0 0 1 * * killall -s SIGUSR1 trojan' >> /var/spool/cron/crontabs/root
+    	cat /var/spool/cron/crontabs/root
 
 	yellow ">>>>>>>> 设置torjan开机启动"
 	sudo systemctl enable trojan.service
@@ -228,7 +228,51 @@ function installV2ray(){
     
     yellow ">>>>>>>> 生成v2ray配置文件"
     sudo cat > /etc/v2ray/config.json <<-EOF
-    tes
+    {
+      "log" : {
+        "access": "/var/log/v2ray/access.log",
+        "error": "/var/log/v2ray/error.log",
+        "loglevel": "debug"
+      },
+      "inbounds": [{
+        "port": 10001,
+        "listen": "127.0.0.1",
+        "protocol": "vmess",
+        "settings": {
+          "clients": [
+            {
+              "id": "$uuid",
+              "level": 1,
+              "alterId": 64,
+              "security": "aes-128-gcm"
+            }
+          ]
+        },
+        "streamSettings": {
+          "network": "ws",
+          "wsSettings": {
+            "path": "/free"
+          }
+        }
+      }],
+      "outbounds": [{
+        "protocol": "freedom",
+        "settings": {}
+      },{
+        "protocol": "blackhole",
+        "settings": {},
+        "tag": "blocked"
+      }],
+      "routing": {
+        "rules": [
+          {
+            "type": "field",
+            "ip": ["geoip:private"],
+            "outboundTag": "blocked"
+          }
+        ]
+      }
+    }
     EOF
     echo "/etc/v2ray/config.json"
     cat /etc/v2ray/config.json
