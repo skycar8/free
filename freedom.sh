@@ -299,7 +299,7 @@ function installV2ray(){
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         }
     }
-    EOF
+EOF
     echo "/etc/nginx/sites-available/$1.conf"
     cat /etc/nginx/sites-available/$1.conf
     
