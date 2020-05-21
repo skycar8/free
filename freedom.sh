@@ -273,7 +273,7 @@ function installV2ray(){
         ]
       }
     }
-    EOF
+EOF
     echo "/etc/v2ray/config.json"
     cat /etc/v2ray/config.json
     
