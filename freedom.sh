@@ -411,7 +411,7 @@ green "=========================================="
 green "是否安装v2ray？输入y:安装， 其它:不安装"
 green "=========================================="
 read input
-if [ input == "y" ];then
+if [ $input == "y" ];then
 installV2ray $domain
 else
 yellow ">>>>>>>> 跳过v2ray安装"
