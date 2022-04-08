@@ -31,7 +31,7 @@ function installNginx(){
 
 	green "===============修改nginx目录为当前用户==============="
 	sudo chown -R $(whoami) /etc/nginx/ || return 101
-	ls -l /etc/ngix/
+	ls -l /etc/nginx/
 	sudo chown -R $(whoami) /usr/share/nginx/ || return 102
 	ls -l /usr/share/nginx/
 
