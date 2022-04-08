@@ -216,7 +216,7 @@ function installTrojan(){
 	yellow "===trojan启动成功==="
 
     	yellow ">>>>>>>> 设置trojan自动更新证书"
-    	sudo sh -C 'echo "0 0 1 * * killall -s SIGUSR1 trojan" >> /var/spool/cron/crontabs/root'
+    	sudo sh -c 'echo "0 0 1 * * killall -s SIGUSR1 trojan" >> /var/spool/cron/crontabs/root'
     	sudo cat /var/spool/cron/crontabs/root
 
 	yellow ">>>>>>>> 设置torjan开机启动"
@@ -324,8 +324,8 @@ echo
 echo
 green "===============开启bbr加速==============="
 # 开启bbr加速
-sudo sh -C 'echo net.core.default_qdisc=fq >> /etc/sysctl.conf'
-sudo sh -C 'echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf'
+sudo sh -c 'echo net.core.default_qdisc=fq >> /etc/sysctl.conf'
+sudo sh -c 'echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf'
 sysctl -p
 
 yellow ">>>>>>>> sysctl net.ipv4.tcp_available_congestion_control"
