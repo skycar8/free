@@ -30,9 +30,9 @@ function installNginx(){
 
 
 	green "===============修改nginx目录为当前用户==============="
-	sudo chown -R /etc/ngix/ $(whoami) || return 101
+	sudo chown -R $(whoami) /etc/ngix/ || return 101
 	ls -l /etc/ngix/
-	sudo chown -R /usr/share/nginx/ $(whoami) || return 102
+	sudo chown -R $(whoami) /usr/share/nginx/ || return 102
 	ls -l /usr/share/nginx/
 
 	echo
@@ -149,7 +149,7 @@ function installTrojan(){
 	echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 200
 
 	green "===============修改trojan目录为当前用户==============="
-	sudo chown -R /usr/local/etc/trojan/ $(whoami) || return 201
+	sudo chown -R $(whoami) /usr/local/etc/trojan/ || return 201
 	ls -l /usr/local/etc/trojan/
 
 	yellow ">>>>>>>> 生成随机密码"
