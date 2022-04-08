@@ -326,10 +326,10 @@ green "===============开启bbr加速==============="
 # 开启bbr加速
 sudo sh -c 'echo net.core.default_qdisc=fq >> /etc/sysctl.conf'
 sudo sh -c 'echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf'
-sysctl -p
+sudo sysctl -p
 
 yellow ">>>>>>>> sysctl net.ipv4.tcp_available_congestion_control"
-sysctl net.ipv4.tcp_available_congestion_control
+sudo sysctl net.ipv4.tcp_available_congestion_control
 #rootMF8-BIZ sysctl net.ipv4.tcp_available_congestion_control
 #net.ipv4.tcp_available_congestion_control = bbr cubic reno
 
