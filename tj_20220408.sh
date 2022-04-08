@@ -277,7 +277,7 @@ echo
 green "===============安装SSL证书==============="
 
 yellow ">>>>>>>> 创建证书文件夹"
-sudo mkdir /etc/nginx/ssl
+mkdir /etc/nginx/ssl
 yellow "ls -l /etc/nginx/ssl"
 ls -l /etc/nginx/ssl
 
