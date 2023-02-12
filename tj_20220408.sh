@@ -228,8 +228,8 @@ function installTrojan(){
 
 
 green "===============安装常用软件包==============="
-sudo apt-get -y update
-sudo apt-get -y install unzip zip wget sudo socat ntp ntpdate gcc git xz-utils || exit 100
+apt-get -y update
+apt-get -y install unzip zip wget sudo curl vim socat ntp ntpdate gcc git xz-utils || exit 100
 
 
 
