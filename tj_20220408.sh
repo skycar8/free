@@ -1,3 +1,9 @@
+############################################################################
+############################################################################
+########################### Updated: 2024-11-26 ###########################
+############################################################################
+############################################################################
+
 #!/bin/bash
 
 function green(){
@@ -16,35 +22,34 @@ function installCert(){
 	~/.acme.sh/acme.sh  --installcert  -d  $1   \
         --key-file   /etc/nginx/ssl/$1.key \
         --fullchain-file /etc/nginx/ssl/$1.crt \
-        --reloadcmd  "sudo service nginx force-reload" \
+        --reloadcmd  "/etc/init.d/nginx restart" \
         --ecc
 }
-
 
 function installNginx(){
 	echo
 	echo
 	green "===============安装nginx==============="
-	sudo apt-get install -y nginx || return 100
+	apt-get install -y nginx || return 100
 	yellow ">>>> nginx安装成功"
 
 
 	green "===============修改nginx目录为当前用户==============="
-	sudo chown -R $(whoami) /etc/nginx/ || return 101
+	chown -R $(whoami) /etc/nginx/ || return 101
 	ls -l /etc/nginx/
-	sudo chown -R $(whoami) /usr/share/nginx/ || return 102
+	chown -R $(whoami) /usr/share/nginx/ || return 102
 	ls -l /usr/share/nginx/
 
 	echo
 	echo
 	green "===============配置nginx==============="
 	yellow ">>>>>>>> 删除默认配置"
-	sudo rm /etc/nginx/sites-enabled/*
+	rm /etc/nginx/sites-enabled/*
 	echo "echo ls -l /etc/nginx/sites-enabled/"
 	ls -l /etc/nginx/sites-enabled/
 
 	yellow ">>>>>>>> 生成配置文件"
-	sudo cat > /etc/nginx/nginx.conf <<-EOF
+	cat > /etc/nginx/nginx.conf <<-EOF
 	user  root;
 	worker_processes  auto;
 	error_log /var/log/nginx/error.log;
@@ -117,7 +122,7 @@ function installNginx(){
 	cat /etc/nginx/sites-available/$1.conf
 
 	yellow ">>>>>>>> 配置nginx服务"
-	sudo ln -s /etc/nginx/sites-available/$1.conf /etc/nginx/sites-enabled/
+	ln -s /etc/nginx/sites-available/$1.conf /etc/nginx/sites-enabled/
 	echo "ls -l /etc/nginx/sites-enabled/"
 	ls -l /etc/nginx/sites-enabled/
 
@@ -132,12 +137,12 @@ function installNginx(){
 	ls -l /usr/share/nginx/html
 
 	yellow "===启动nginx==="
-	sudo systemctl restart nginx  || return 103
-	sudo systemctl status nginx
+	systemctl restart nginx  || return 103
+	systemctl status nginx
 	yellow "===nginx启动成功==="
 
 	yellow ">>>>>>>> 设置nginx开机启动"
-	sudo systemctl enable nginx.service
+	systemctl enable nginx.service
 }
 
 
@@ -146,10 +151,10 @@ function installTrojan(){
 	echo
 	green "===============安装trojan==============="
 	# 安装trojan
-	echo y | sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 200
+	echo y | bash -c "$(curl -fsSL https://raw.githubusercontent.com/trojan-gfw/trojan-quickstart/master/trojan-quickstart.sh)" || return 200
 
 	green "===============修改trojan目录为当前用户==============="
-	sudo chown -R $(whoami) /usr/local/etc/trojan/ || return 201
+	chown -R $(whoami) /usr/local/etc/trojan/ || return 201
 	ls -l /usr/local/etc/trojan/
 
 	yellow ">>>>>>>> 生成随机密码"
@@ -157,7 +162,7 @@ function installTrojan(){
 	purple "随机密码: $password"
 
 	yellow ">>>>>>>> 生成trojan配置文件"
-	sudo cat > /usr/local/etc/trojan/config.json <<-EOF
+	cat > /usr/local/etc/trojan/config.json <<-EOF
 	{
 	    "run_type": "server",
 	    "local_addr": "0.0.0.0",
@@ -211,16 +216,16 @@ function installTrojan(){
 	cat /usr/local/etc/trojan/config.json
 
 	yellow "===启动trojan==="
-	sudo systemctl restart trojan  || return 202
-	sudo systemctl status trojan
+	systemctl restart trojan  || return 202
+	systemctl status trojan
 	yellow "===trojan启动成功==="
 
     	yellow ">>>>>>>> 设置trojan自动更新证书"
-    	sudo sh -c 'echo "0 0 1 * * killall -s SIGUSR1 trojan" >> /var/spool/cron/crontabs/root'
-    	sudo cat /var/spool/cron/crontabs/root
+    	sh -c 'echo "0 0 1 * * killall -s SIGUSR1 trojan" >> /var/spool/cron/crontabs/root'
+    	cat /var/spool/cron/crontabs/root
 
 	yellow ">>>>>>>> 设置torjan开机启动"
-	sudo systemctl enable trojan.service
+	systemctl enable trojan.service
 }
 
 
@@ -229,7 +234,7 @@ function installTrojan(){
 
 green "===============安装常用软件包==============="
 apt-get -y update
-apt-get -y install unzip zip wget sudo curl vim socat ntp ntpdate gcc git xz-utils || exit 100
+apt-get -y install unzip zip wget curl vim socat ntp ntpdate gcc git xz-utils || exit 100
 
 
 
@@ -324,12 +329,12 @@ echo
 echo
 green "===============开启bbr加速==============="
 # 开启bbr加速
-sudo sh -c 'echo net.core.default_qdisc=fq >> /etc/sysctl.conf'
-sudo sh -c 'echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf'
-sudo sysctl -p
+sh -c 'echo net.core.default_qdisc=fq >> /etc/sysctl.conf'
+sh -c 'echo net.ipv4.tcp_congestion_control=bbr >> /etc/sysctl.conf'
+sysctl -p
 
 yellow ">>>>>>>> sysctl net.ipv4.tcp_available_congestion_control"
-sudo sysctl net.ipv4.tcp_available_congestion_control
+sysctl net.ipv4.tcp_available_congestion_control
 #rootMF8-BIZ sysctl net.ipv4.tcp_available_congestion_control
 #net.ipv4.tcp_available_congestion_control = bbr cubic reno
 
