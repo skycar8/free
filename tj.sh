@@ -106,7 +106,7 @@ setupFirewall
 green "Please enter your domain name: "
 read DOMAIN
 
-IP=$(curl -s ifconfig.me)
+IP=$(curl ipinfo.io/ip)
 purple "Detected IP: $IP"
 
 installNginx $DOMAIN
