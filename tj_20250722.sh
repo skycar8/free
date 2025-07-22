@@ -293,8 +293,8 @@ curl https://get.acme.sh | sh  || exit 300
 
 yellow ">>>>>>>> 设置ZeroSSL账号"
 ~/.acme.sh/acme.sh  --register-account  --server zerossl \
-        --eab-kid  SW743Pz5NW4Fo_R_JKSRbQ  \
-        --eab-hmac-key  uavWo9Ae_TlX05_ls5klOUKiU0HAFBKNPdZ-HL2ZU-5YCR5SOuWbT6lX-kU3ILOxJXEYgfKDzUVaNbfJMsvF9w
+        --eab-kid  XqxvFKKvBaWrcJSAaVMdag  \
+        --eab-hmac-key  JQ76QlPJEmwowk2HKNvYj5UsqvtKZVrwD7SnrKGeHPH_BUv0Hq8TG321z55biHkarSvHpdpIU-LDZVQSb05yEA
 
 yellow ">>>>>>>> 申请证书"
 ~/.acme.sh/acme.sh  --issue  -d $domain  \
