@@ -1,6 +1,6 @@
 ############################################################################
 ############################################################################
-########################### Updated: 2024-11-26 ###########################
+########################### Updated: 2025-07-22 ###########################
 ############################################################################
 ############################################################################
 
@@ -231,10 +231,44 @@ function installTrojan(){
 
 
 
+################################### Start point ##########################################
+################################### Start point ##########################################
+################################### Start point ##########################################
+
+echo
+echo
+green "=========================================="
+green "输入eab-kid"
+green "=========================================="
+read eab_kid
+if [[ -z "$eab_kid" || "$eab_kid" == "nil" ]]; then
+    yellow "无效的 EAB KID，不能为空或为 'nil'"
+    exit 1
+fi
+
+
+
+
+
+echo
+echo
+green "=========================================="
+green "输入eab-hmac-key"
+green "=========================================="
+read eab_hmac_key
+if [[ -z "$eab_hmac_key" || "$eab_hmac_key" == "nil" ]]; then
+    yellow "无效的 EAB HMAC KEY，不能为空或为 'nil'"
+    exit 1
+fi
+
+
+
+
 
 green "===============安装常用软件包==============="
 apt-get -y update
 apt-get -y install unzip zip wget curl vim socat ntp ntpdate gcc git xz-utils || exit 100
+
 
 
 
@@ -246,9 +280,12 @@ green "=========================================="
 green "输入解析到此VPS的域名"
 green "=========================================="
 read domain
-# 校验域名
-
-
+if [[ "$domain" =~ ^([a-zA-Z0-9][-a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$ ]]; then
+    echo "域名有效: $domain"
+else
+    yellow "无效的域名格式，请检查拼写"
+    exit 1
+fi
 
 
 
@@ -263,7 +300,10 @@ green "===============获取本机ip地址==============="
 # curl tnx.nl/ip
 # curl myip.dnsomatic.com
 # curl ip.appspot.com
-ipAddr=$(curl ifconfig.me)
+# curl icanhazip.com
+# curl ifconfig.me
+# curl 4.ipw.cn
+ipAddr=$(curl ipinfo.io/ip)
 purple ">>>>>>>> 本机ip: $ipAddr"
 
 
@@ -293,8 +333,8 @@ curl https://get.acme.sh | sh  || exit 300
 
 yellow ">>>>>>>> 设置ZeroSSL账号"
 ~/.acme.sh/acme.sh  --register-account  --server zerossl \
-        --eab-kid  XqxvFKKvBaWrcJSAaVMdag  \
-        --eab-hmac-key  JQ76QlPJEmwowk2HKNvYj5UsqvtKZVrwD7SnrKGeHPH_BUv0Hq8TG321z55biHkarSvHpdpIU-LDZVQSb05yEA
+        --eab-kid  $eab_kid  \
+        --eab-hmac-key  $eab_hmac_key
 
 yellow ">>>>>>>> 申请证书"
 ~/.acme.sh/acme.sh  --issue  -d $domain  \
