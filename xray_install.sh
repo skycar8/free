@@ -115,8 +115,8 @@ EOF
 config_reality() {
     UUID=$(uuidgen)
     X25519_KEY=$(xray x25519)
-    PRIVATE_KEY=$(echo "$X25519_KEY" | grep "Private key" | awk '{print $3}')
-    PUBLIC_KEY=$(echo "$X25519_KEY" | grep "Public key" | awk '{print $3}')
+    PRIVATE_KEY=$(echo "$X25519_KEY" | awk -F': ' '/PrivateKey/ {print $2}')
+    PUBLIC_KEY=$(echo "$X25519_KEY" | awk -F': ' '/PublicKey/ {print $2}')
     echo "$PUBLIC_KEY" > /usr/local/etc/xray/pub.key
     SHORT_ID=$(head /dev/urandom | tr -dc 'a-f0-9' | head -c 12)
     
@@ -244,7 +244,7 @@ restart_and_show_info() {
 
     echo -e "${BLUE}Restarting Xray service...${PLAIN}"
     systemctl restart xray
-    sleep 1
+    sleep 2
 
     if systemctl is-active xray &>/dev/null; then
         echo -e "\n${GREEN}==================================================${PLAIN}"
