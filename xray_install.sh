@@ -185,8 +185,8 @@ serve_subscriptions() {
 
     IP=$(curl -s https://api.ipify.org)
     PORT=8080
-    ROCKET_URL="http://${MY_DOMAIN:-$MYIP}:${PORT}/rocket.txt"
-    CLASH_URL="http://${MY_DOMAIN:-$MYIP}:${PORT}/clash.yaml"
+    ROCKET_URL="http://${MY_DOMAIN:-$IP}:${PORT}/rocket.txt"
+    CLASH_URL="http://${MY_DOMAIN:-$IP}:${PORT}/clash.yaml"
 
     echo -e "\n${GREEN}==================================================${PLAIN}"
     echo -e "${YELLOW}  🚀 Dual Subscription Engine Active!             ${PLAIN}"
